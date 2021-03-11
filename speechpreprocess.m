@@ -40,7 +40,7 @@ elseif size(x,2) > 2
         size(x,2));
 end
 
-% Plot audio in time domain
+% Plot audio in time domain and play audio
 if playPlot
     xLen = length(x);
     t = 0:1/fs:xLen/fs-1/fs;
@@ -60,10 +60,17 @@ if playPlot
 end
 
 % Compute CFCC
-frameLen = 256;
-frameDelay = 100;
+frameDuration = 25; % ms
+strideDuration = 10; % ms
+frameLen = round(frameDuration*10^-3*fs);
+frameDelay = round(strideDuration*10^-3*fs);
 xLen = length(x);
-numFrames = floor((xLen - frameLen)/frameDelay) + 1;
+numFrames = ceil((xLen - frameLen)/frameDelay) + 1;
+% zero pad signal to be exaclty numFrames long
+padLen = numFrames*frameDelay + frameLen;
+x = [x;zeros(padLen - xLen,1)];
+xLen = length(x);
+
 hammingWindow = hamming(frameLen,'periodic');
 melBank = melfb(numFilters, xLen, fs);
 
@@ -78,8 +85,8 @@ while (iFrame <= numFrames)
     % Compute fourier spectrum
     Y = fft(y);
     % Compute mel-frequency spectrum
-    ileftDFT = floor(xLen/2);
-    MFS = melBank * Y(1:ileftDFT+1).^2;
+    iLeftDFT = floor(xLen/2);
+    MFS = melBank * Y(1:iLeftDFT+1).^2;
     % Store
     melSpectrums(:,iFrame) = MFS;
     
