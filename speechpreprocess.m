@@ -1,4 +1,4 @@
-function [] = speechpreprocess(path, plots)
+function [] = speechpreprocess(path, playPlot)
 %SPEACHPREPROCESS Reads a sound file and converts to MFCC sequence.
 %
 % Inputs:           path    string, filepath to sound file
@@ -12,12 +12,12 @@ function [] = speechpreprocess(path, plots)
 assert(isstring(path)||iscellstr(path)||ischar(path),...
     ['path variable is not type string array, cell array of character',...
     'vectors, or character array.'])
-assert(islogical(plots),'plot variable is not type logical.')
+assert(islogical(playPlot),'plot variable is not type logical.')
 
 [x, fs] = audioread(path);
 
 % Peak Normalization
-if size(x,1) == 1
+if size(x,2) == 1
     peak = max(abs(x));
     x = x/peak;
 elseif size(x,2) == 2
@@ -39,9 +39,9 @@ elseif size(x,2) > 2
 end
 
 % Plot audio in time domain
-if plots
-    lenX = length(x);
-    t = 0:1/fs:lenX/fs-1/fs;
+if playPlot
+    xLen = length(x);
+    t = 0:1/fs:xLen/fs-1/fs;
     
     figure;
     plot(t,x');
@@ -52,5 +52,23 @@ if plots
     
     numMs = 256/fs*1000;
     fprintf('There are %.2f ms of speech in 256 samples.\n',numMs);
+    
+    % Play audio file
+    sound(x,fs);
 end
+
+% Frame blocking
+frameLen = 256;
+frameDelay = 100;
+xLen = length(x);
+numFrames = floor((xLen - frameLen)/frameDelay) + 1;
+frames = zeros(frameLen, numFrames);
+iSample = 1;
+frameNum = 1;
+while (iSample < xLen)
+    frames(:,frameNum) = x(iSample:iSample+frameLen-1);
+    iSample = iSample + frameDelay;
+    frameNum = frameNum + 1;
+end
+
 end

@@ -8,4 +8,5 @@ In accordance with the completion of UC Davis' EEC 201: Digital Signal
 Processing.
 %}
 clc; clearvars; close all;
-speechpreprocess('Data/Test_Data/s1.wav',true)
+path = fullfile('Data','Test_Data','s7.wav');
+speechpreprocess(path,true)
