@@ -57,18 +57,26 @@ if playPlot
     sound(x,fs);
 end
 
-% Frame blocking
+% Compute CFCC
 frameLen = 256;
 frameDelay = 100;
 xLen = length(x);
 numFrames = floor((xLen - frameLen)/frameDelay) + 1;
-frames = zeros(frameLen, numFrames);
-iSample = 1;
-frameNum = 1;
-while (iSample < xLen)
-    frames(:,frameNum) = x(iSample:iSample+frameLen-1);
-    iSample = iSample + frameDelay;
-    frameNum = frameNum + 1;
-end
+hammingWindow = hamming(frameLen,'periodic');
 
+spectrums = zeros(frameLen, numFrames);
+iSample = 1;
+iFrame = 1;
+while (iFrame <= numFrames)
+    % Frame blocking
+    frame = x(iSample:iSample+frameLen-1);
+    % Window each frame
+    y = frame.*hammingWindow;
+    % Compute fourier spectrum
+    Y = fft(y);
+    spectrums(:,iFrame) = Y;
+    
+    iSample = iSample + frameDelay;
+    iFrame = iFrame + 1;
+end
 end
