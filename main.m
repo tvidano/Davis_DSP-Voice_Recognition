@@ -9,4 +9,4 @@ Processing.
 %}
 clc; clearvars; close all;
 path = fullfile('Data','Test_Data','s7.wav');
-speechpreprocess(path,true)
+speechpreprocess(path,uint8(20),false)

@@ -1,8 +1,9 @@
-function [] = speechpreprocess(path, playPlot)
+function [] = speechpreprocess(path, numFilters, playPlot)
 %SPEACHPREPROCESS Reads a sound file and converts to MFCC sequence.
 %
-% Inputs:           path    string, filepath to sound file
-%                   plots   logical, plot the signal in time domain
+% Inputs:           path        string, filepath to sound file
+%                   plots       logical, plot the signal in time domain
+%                   numFilters  number of filters in the mel-freq. bank
 %
 % Outputs:
 %
@@ -13,6 +14,7 @@ assert(isstring(path)||iscellstr(path)||ischar(path),...
     ['path variable is not type string array, cell array of character',...
     'vectors, or character array.'])
 assert(islogical(playPlot),'plot variable is not type logical.')
+assert(isinteger(numFilters), 'numFilters variable is not type integer.')
 
 [x, fs] = audioread(path);
 
@@ -63,8 +65,9 @@ frameDelay = 100;
 xLen = length(x);
 numFrames = floor((xLen - frameLen)/frameDelay) + 1;
 hammingWindow = hamming(frameLen,'periodic');
+melBank = melfb(numFilters, xLen, fs);
 
-spectrums = zeros(frameLen, numFrames);
+melSpectrums = zeros(frameLen, numFrames);
 iSample = 1;
 iFrame = 1;
 while (iFrame <= numFrames)
@@ -74,7 +77,11 @@ while (iFrame <= numFrames)
     y = frame.*hammingWindow;
     % Compute fourier spectrum
     Y = fft(y);
-    spectrums(:,iFrame) = Y;
+    % Compute mel-frequency spectrum
+    ileftDFT = floor(xLen/2);
+    MFS = melBank * Y(1:ileftDFT+1).^2;
+    % Store
+    melSpectrums(:,iFrame) = MFS;
     
     iSample = iSample + frameDelay;
     iFrame = iFrame + 1;
