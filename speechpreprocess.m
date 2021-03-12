@@ -1,9 +1,10 @@
-function [] = speechpreprocess(path, numFilters, playPlot)
+function [] = speechpreprocess(path, numFilters, numCoeffs, playPlot)
 %SPEACHPREPROCESS Reads a sound file and converts to MFCC sequence.
 %
 % Inputs:           path        string, filepath to sound file
 %                   plots       logical, plot the signal in time domain
 %                   numFilters  number of filters in the mel-freq. bank
+%                   numCoeffs   number of ceptral coefficients to keep
 %
 % Outputs:
 %
@@ -40,6 +41,13 @@ elseif size(x,2) > 2
         size(x,2));
 end
 
+figure;
+S = melSpectrogram(x,fs);
+[numBands,numFrames] = size(S);
+fprintf('Num bands: %d\n',numBands);
+fprintf('Num frames: %d\n',numFrames);
+melSpectrogram(x,fs);
+
 % Plot audio in time domain and play audio
 if playPlot
     xLen = length(x);
@@ -59,6 +67,10 @@ if playPlot
     sound(x,fs);
 end
 
+% Pre-Emphasis Filter
+% alpha = 0.95;
+% x = x - alpha*[x(2:end);0];
+
 % Compute CFCC
 frameDuration = 25; % ms
 strideDuration = 10; % ms
@@ -72,9 +84,11 @@ x = [x;zeros(padLen - xLen,1)];
 xLen = length(x);
 
 hammingWindow = hamming(frameLen,'periodic');
-melBank = melfb(numFilters, xLen, fs);
+H = melBank(frameLen, numFilters, 0, fs/2, fs);
+figure; plot(linspace(0,fs/2,length(H)),H); title('Mel Filter Banks');
 
-melSpectrums = zeros(frameLen, numFrames);
+melSpectrums = zeros(numFilters, numFrames);
+MFCCs = zeros(numCoeffs, numFrames);
 iSample = 1;
 iFrame = 1;
 while (iFrame <= numFrames)
@@ -82,15 +96,39 @@ while (iFrame <= numFrames)
     frame = x(iSample:iSample+frameLen-1);
     % Window each frame
     y = frame.*hammingWindow;
-    % Compute fourier spectrum
-    Y = fft(y);
+    % Compute fourier spectrum and power spectrum
+    yDFT = fft(y);
+    yDFT = yDFT(1:ceil(frameLen/2));
+    yPS = (1/xLen)*abs(yDFT).^2;
     % Compute mel-frequency spectrum
-    iLeftDFT = floor(xLen/2);
-    MFS = melBank * Y(1:iLeftDFT+1).^2;
+	filterBanks = H*yPS;
+    MFS = 20*log10(filterBanks);
+    MFS = MFS - mean(MFS);
+    % Apply DCT..
+    MFCC = dct(MFS);
+    MFCC = MFCC(2:numCoeffs+1);
+    MFCC = MFCC - mean(MFCC);
+    
     % Store
     melSpectrums(:,iFrame) = MFS;
+    MFCCs(:,iFrame) = MFCC;
     
     iSample = iSample + frameDelay;
     iFrame = iFrame + 1;
 end
+
+% Visualize
+t = linspace(0,xLen/fs,numFrames);
+f = linspace(0,fs/2,numFilters);
+figure; surf(t,f,melSpectrums, 'EdgeColor', 'none');
+cBar = colorbar; ylabel(cBar, 'Power (dB)');
+view(0,90); xlabel('Time [s]'); ylabel('Frequency [Hz]');
+axis tight;
+
+coeffs = 2:numCoeffs+1;
+figure; surf(t,coeffs,MFCCs, 'EdgeColor', 'none');
+cBar = colorbar; ylabel(cBar, 'Power (dB)');
+view(0,90); xlabel('Time [s]'); ylabel('MFCC Number');
+axis tight;
+
 end
