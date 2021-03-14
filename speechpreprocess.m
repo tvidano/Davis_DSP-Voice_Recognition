@@ -42,12 +42,12 @@ elseif size(x,2) > 2
 end
 
 % Get ground-truth Spectrogram..
-figure;
-S = melSpectrogram(x,fs);
-[numBands,numFrames] = size(S);
-fprintf('Num bands: %d\n',numBands);
-fprintf('Num frames: %d\n',numFrames);
-melSpectrogram(x,fs);
+% figure;
+% S = melSpectrogram(x,fs);
+% [numBands,numFrames] = size(S);
+% fprintf('Num bands: %d\n',numBands);
+% fprintf('Num frames: %d\n',numFrames);
+% melSpectrogram(x,fs);
 
 % Test 2: Plot audio in time domain and play audio
 if playPlot
@@ -122,19 +122,19 @@ while (iFrame <= numFrames)
 end
 
 % Visualize Mel Spectrogram
-t = linspace(0,xLen/fs,numFrames);
-f = linspace(0,fs/2,numFilters);
-figure; surf(t,f,melSpectrums, 'EdgeColor', 'none');
-cBar = colorbar; ylabel(cBar, 'Power (dB)');
-view(0,90); xlabel('Time [s]'); ylabel('Frequency [Hz]');
-axis tight;
+% t = linspace(0,xLen/fs,numFrames);
+% f = linspace(0,fs/2,numFilters);
+% figure; surf(t,f,melSpectrums, 'EdgeColor', 'none');
+% cBar = colorbar; ylabel(cBar, 'Power (dB)');
+% view(0,90); xlabel('Time [s]'); ylabel('Frequency [Hz]');
+% axis tight;
 
 % Visualize MFCCs
 % coeffs = 2:numCoeffs+1;
-coeffs = 1:size(MFCCs,1);
-figure; surf(t,coeffs,MFCCs, 'EdgeColor', 'none');
-cBar = colorbar; ylabel(cBar, 'Power (dB)');
-view(0,90); xlabel('Time [s]'); ylabel('MFCC Number');
-axis tight;
+% coeffs = 1:size(MFCCs,1);
+% figure; surf(t,coeffs,MFCCs, 'EdgeColor', 'none');
+% cBar = colorbar; ylabel(cBar, 'Power (dB)');
+% view(0,90); xlabel('Time [s]'); ylabel('MFCC Number');
+% axis tight;
 
 end
