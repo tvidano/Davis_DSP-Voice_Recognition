@@ -1,9 +1,9 @@
-function [MFCCs] = speechpreprocess(path, numFilters, ...
+function [MFCCs] = speechpreprocess(x, fs, numFilters, ...
                                     frameDuration, strideDuration, ...
                                     playPlot)
 %SPEACHPREPROCESS Reads a sound file and converts to MFCC sequence.
 %
-% Inputs:       path            string, filepath to sound file
+% Inputs:       x               audio sample
 %               numFilters      number of filters in the mel-freq. bank
 %               frameDuration   length of frame in ms
 %               strideDuration  millisec. to slide each frame forward
@@ -14,13 +14,9 @@ function [MFCCs] = speechpreprocess(path, numFilters, ...
 % Usage:
 
 % check valid data types
-assert(isstring(path)||iscellstr(path)||ischar(path),...
-    ['path variable is not type string array, cell array of character',...
-    'vectors, or character array.'])
+assert(isnumeric(x),'sample variable is not type numeric.')
 assert(islogical(playPlot),'plot variable is not type logical.')
-assert(isinteger(numFilters), 'numFilters variable is not type integer.')
-
-[x, fs] = audioread(path);
+assert(isnumeric(numFilters), 'numFilters variable is not type numeric.')
 
 % Peak Normalization
 if size(x,2) == 1
