@@ -32,7 +32,7 @@ freqs = toFreq(mels);
 iFFT = round(floor(fftLen/2)/(fs/2)*freqs + 1);
 
 % Create filterbanks.
-H = zeros(numFilters, floor(fftLen/2 + 1));
+H = zeros(numFilters, ceil(fftLen/2));
 for iFilter = 2:numFilters+1
     % Find frequencies associated with triangle filter..
     iLeft = iFFT(iFilter - 1);
@@ -43,7 +43,7 @@ for iFilter = 2:numFilters+1
         H(iFilter-1, i) = (i - iLeft)/(iCenter - iLeft);
     end
     % Calculate right half of filter..
-    for i = iCenter:(iRight)
+    for i = iCenter:(iRight-1)
         H(iFilter-1, i) = (iRight - i)/(iRight - iCenter);
     end
 end

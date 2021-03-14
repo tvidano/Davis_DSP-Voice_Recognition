@@ -1,9 +1,13 @@
-function [MFCCs] = speechpreprocess(path, numFilters, playPlot)
+function [MFCCs] = speechpreprocess(path, numFilters, ...
+                                    frameDuration, strideDuration, ...
+                                    playPlot)
 %SPEACHPREPROCESS Reads a sound file and converts to MFCC sequence.
 %
-% Inputs:           path        string, filepath to sound file
-%                   numFilters  number of filters in the mel-freq. bank
-%                   playPlots   logical, plot the signal in time domain
+% Inputs:       path            string, filepath to sound file
+%               numFilters      number of filters in the mel-freq. bank
+%               frameDuration   length of frame in ms
+%               strideDuration  millisec. to slide each frame forward
+%               playPlots       logical, plot the signal in time domain
 %
 % Outputs:
 %
@@ -72,8 +76,6 @@ alpha = 0.95;
 x = x - alpha*[x(2:end);0];
 
 % Compute CFCC
-frameDuration = 25; % ms
-strideDuration = 10; % ms
 frameLen = round(frameDuration*10^-3*fs); % samples
 frameDelay = round(strideDuration*10^-3*fs); % samples
 xLen = length(x);

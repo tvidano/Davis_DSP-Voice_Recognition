@@ -13,13 +13,16 @@ clc; clearvars; close all;
 numClusters = uint8(8);
 numFilters = uint8(32);
 numMFCCs = uint8(12);
+frameDuration = 25;
+strideDuration = 10;
 numTrain = 11;
 TrainDir = fullfile('Data','Training_Data');
 codeBooks = cell(numTrain,1);
 for i = 1:numTrain
     filename = 's' + string(i) + '.wav';
     path = fullfile(TrainDir,filename);
-    MFCCs = speechpreprocess(path,numFilters,false);
+    MFCCs = speechpreprocess(path,numFilters,frameDuration,...
+                             strideDuration,false);
     [idx,C,sumd] = kmeans(MFCCs(2:numMFCCs+1,:)',numClusters,...
                           'Replicates',20,'MaxIter',80);
     codeBooks{i} = C;
@@ -35,7 +38,8 @@ TestCases = [(1:8)',randperm(8)'];
 for i = 1:numTest
     filename = 's' + string(TestCases(i,2)) + '.wav';
     path = fullfile(TestDir,filename);
-    MFCCs = speechpreprocess(path,numFilters,false);
+    MFCCs = speechpreprocess(path,numFilters,frameDuration,...
+                             strideDuration,false);
     MFCCs = MFCCs(2:numMFCCs+1,:);
     
     lowestDist = inf;
