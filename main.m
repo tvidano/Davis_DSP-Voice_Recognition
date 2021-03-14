@@ -12,15 +12,14 @@ clc; clearvars; close all;
 % Build Codebook for each Train Data
 numClusters = uint8(8);
 numFilters = uint8(32);
-numCoeffs = uint8(12);
-numMFCCs = uint8(13);
+numMFCCs = uint8(12);
 numTrain = 11;
 TrainDir = fullfile('Data','Training_Data');
 codeBooks = cell(numTrain,1);
 for i = 1:numTrain
     filename = 's' + string(i) + '.wav';
     path = fullfile(TrainDir,filename);
-    MFCCs = speechpreprocess(path,numFilters,numCoeffs,false);
+    MFCCs = speechpreprocess(path,numFilters,false);
     [idx,C,sumd] = kmeans(MFCCs(2:numMFCCs+1,:)',numClusters,...
                           'Replicates',20,'MaxIter',80);
     codeBooks{i} = C;
@@ -36,7 +35,7 @@ TestCases = [(1:8)',randperm(8)'];
 for i = 1:numTest
     filename = 's' + string(TestCases(i,2)) + '.wav';
     path = fullfile(TestDir,filename);
-    MFCCs = speechpreprocess(path,numFilters,numCoeffs,false);
+    MFCCs = speechpreprocess(path,numFilters,false);
     MFCCs = MFCCs(2:numMFCCs+1,:);
     
     lowestDist = inf;
@@ -52,6 +51,10 @@ for i = 1:numTest
     end
     testMatch(i) = iLowest;
 end 
+
+% Compute error statistics
+accuracy = mean(TestCases(:,2)==testMatch);
+fprintf('Accuracy = %.1f %% \n',accuracy*100);
 
 % path = fullfile('Data','Test_Data','s7.wav');
 % MFCC1 = speechpreprocess(path,uint8(32),uint8(12),false);

@@ -1,9 +1,8 @@
-function [MFCCs] = speechpreprocess(path, numFilters, numCoeffs, playPlot)
+function [MFCCs] = speechpreprocess(path, numFilters, playPlot)
 %SPEACHPREPROCESS Reads a sound file and converts to MFCC sequence.
 %
 % Inputs:           path        string, filepath to sound file
 %                   numFilters  number of filters in the mel-freq. bank
-%                   numCoeffs   number of ceptral coefficients to keep
 %                   playPlots   logical, plot the signal in time domain
 %
 % Outputs:
