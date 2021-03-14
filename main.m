@@ -12,10 +12,13 @@ path = fullfile('Data','Test_Data','s7.wav');
 MFCC1 = speechpreprocess(path,uint8(32),uint8(12),false);
 [audioIn, fs] = audioread(path);
 MFCC2 = mfcc(audioIn,fs,'LogEnergy','Ignore');
+[idx,C] = kmeans(MFCC1(2:4,:)',2)
 
 % Visualize cluster..
-figure;
+figure; hold on;
 scatter3(MFCC1(2,:),MFCC1(3,:),MFCC1(4,:))
+scatter3(C(:,1),C(:,2),C(:,3),'kx');
+hold off;
 xlabel('MFCC 2');ylabel('MFCC 3'); zlabel('MFCC 4');
 figure;
 scatter3(MFCC2(:,1),MFCC2(:,2),MFCC2(:,3))

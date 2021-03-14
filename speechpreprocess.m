@@ -2,9 +2,9 @@ function [MFCCs] = speechpreprocess(path, numFilters, numCoeffs, playPlot)
 %SPEACHPREPROCESS Reads a sound file and converts to MFCC sequence.
 %
 % Inputs:           path        string, filepath to sound file
-%                   plots       logical, plot the signal in time domain
 %                   numFilters  number of filters in the mel-freq. bank
 %                   numCoeffs   number of ceptral coefficients to keep
+%                   playPlots   logical, plot the signal in time domain
 %
 % Outputs:
 %
@@ -42,14 +42,14 @@ elseif size(x,2) > 2
 end
 
 % Get ground-truth Spectrogram..
-% figure;
-% S = melSpectrogram(x,fs);
-% [numBands,numFrames] = size(S);
-% fprintf('Num bands: %d\n',numBands);
-% fprintf('Num frames: %d\n',numFrames);
-% melSpectrogram(x,fs);
+figure;
+S = melSpectrogram(x,fs);
+[numBands,numFrames] = size(S);
+fprintf('Num bands: %d\n',numBands);
+fprintf('Num frames: %d\n',numFrames);
+melSpectrogram(x,fs);
 
-% Plot audio in time domain and play audio
+% Test 2: Plot audio in time domain and play audio
 if playPlot
     xLen = length(x);
     t = 0:1/fs:xLen/fs-1/fs;
@@ -75,8 +75,8 @@ x = x - alpha*[x(2:end);0];
 % Compute CFCC
 frameDuration = 25; % ms
 strideDuration = 10; % ms
-frameLen = round(frameDuration*10^-3*fs);
-frameDelay = round(strideDuration*10^-3*fs);
+frameLen = round(frameDuration*10^-3*fs); % samples
+frameDelay = round(strideDuration*10^-3*fs); % samples
 xLen = length(x);
 numFrames = ceil((xLen - frameLen)/frameDelay) + 1;
 % zero pad signal to be exactly numFrames long
@@ -104,8 +104,9 @@ while (iFrame <= numFrames)
     yPS = (1/length(yDFT))*abs(yDFT.^2);
 %     yPS = abs(yDFT);
     % Compute mel-frequency spectrum
-	filterBanks = H*yPS;
-    MFS = 20*log10(filterBanks);
+% 	filterBanks = H*yPS;
+    filterBanks = abs(H).^2*yPS;
+    MFS = db(filterBanks);
 %     MFS = MFS - mean(MFS);
     % Apply DCT..
     MFCC = dct(MFS);
@@ -121,18 +122,19 @@ while (iFrame <= numFrames)
 end
 
 % Visualize Mel Spectrogram
-% t = linspace(0,xLen/fs,numFrames);
-% f = linspace(0,fs/2,numFilters);
-% figure; surf(t,f,melSpectrums, 'EdgeColor', 'none');
-% cBar = colorbar; ylabel(cBar, 'Power (dB)');
-% view(0,90); xlabel('Time [s]'); ylabel('Frequency [Hz]');
-% axis tight;
+t = linspace(0,xLen/fs,numFrames);
+f = linspace(0,fs/2,numFilters);
+figure; surf(t,f,melSpectrums, 'EdgeColor', 'none');
+cBar = colorbar; ylabel(cBar, 'Power (dB)');
+view(0,90); xlabel('Time [s]'); ylabel('Frequency [Hz]');
+axis tight;
 
 % Visualize MFCCs
 % coeffs = 2:numCoeffs+1;
-% figure; surf(t,coeffs,MFCCs, 'EdgeColor', 'none');
-% cBar = colorbar; ylabel(cBar, 'Power (dB)');
-% view(0,90); xlabel('Time [s]'); ylabel('MFCC Number');
-% axis tight;
+coeffs = 1:size(MFCCs,1);
+figure; surf(t,coeffs,MFCCs, 'EdgeColor', 'none');
+cBar = colorbar; ylabel(cBar, 'Power (dB)');
+view(0,90); xlabel('Time [s]'); ylabel('MFCC Number');
+axis tight;
 
 end
