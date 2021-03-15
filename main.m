@@ -7,54 +7,41 @@ Date: 03/20/2021
 In accordance with the completion of UC Davis' EEC 201: Digital Signal
 Processing.
 %}
-clc; clearvars; close all;
+clc; clear all; close all;
+
+% Collect Training Data
+numSpeakers = 11;
+TrainDir = fullfile('Data','Training_Data');
+TrainDataBase = cell(1,numSpeakers);
+for i = 1:numSpeakers
+    filename = 's' + string(i) + '.wav';
+    [audio,Fs] = audioread(fullfile(TrainDir,filename));
+    TrainDataBase{i} = {audio,Fs};
+end 
 
 % Build Codebook for each Train Data
-numClusters = uint8(8);
-numFilters = uint8(32);
-numMFCCs = uint8(12);
-frameDuration = 25;
-strideDuration = 10;
-numTrain = 11;
-TrainDir = fullfile('Data','Training_Data');
-codeBooks = cell(numTrain,1);
-for i = 1:numTrain
-    filename = 's' + string(i) + '.wav';
-    path = fullfile(TrainDir,filename);
-    MFCCs = speechpreprocess(path,numFilters,frameDuration,...
-                             strideDuration,false);
-    [idx,C,sumd] = kmeans(MFCCs(2:numMFCCs+1,:)',numClusters,...
-                          'Replicates',20,'MaxIter',80);
-    codeBooks{i} = C;
+numClusters = 3;
+numFilters = 28;
+numCoeffs = 10;
+frameDuration = 30;
+strideDuration = 15;
+classifier = speakerClassifier(numClusters,numFilters,numCoeffs,...
+                               frameDuration,strideDuration);
+codeBooks = classifier.train(TrainDataBase);
+
+% Collect Test Data
+TestDir = fullfile('Data','Test_Data');
+TestDataBase = cell(1,8);
+TestCases = [(1:8)',randperm(8)'];
+for i = 1:8
+    filename = 's' + string(TestCases(i,2)) + '.wav';
+    [audio,Fs] = audioread(fullfile(TestDir,filename));
+    TestDataBase{i} = {audio,Fs};
 end
 
 % Classify Test Data
-numTest = 8;
-TestDir = fullfile('Data','Test_Data');
-testMatch = zeros(8,1);
-rng(22);
-TestCases = [(1:8)',randperm(8)'];
 
-for i = 1:numTest
-    filename = 's' + string(TestCases(i,2)) + '.wav';
-    path = fullfile(TestDir,filename);
-    MFCCs = speechpreprocess(path,numFilters,frameDuration,...
-                             strideDuration,false);
-    MFCCs = MFCCs(2:numMFCCs+1,:);
-    
-    lowestDist = inf;
-    iLowest = 0;
-    for j = 1:numTrain
-        [nearestCentrDist,idx_test] = pdist2(codeBooks{j},MFCCs',...
-                                             'euclidean','Smallest',1);
-        dist = mean(nearestCentrDist);
-        if dist < lowestDist
-            lowestDist = dist;
-            iLowest = j;
-        end
-    end
-    testMatch(i) = iLowest;
-end 
+testMatch = classifier.classify(TestDataBase);
 
 % Compute error statistics
 accuracy = mean(TestCases(:,2)==testMatch);

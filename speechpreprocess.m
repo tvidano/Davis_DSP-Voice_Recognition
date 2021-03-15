@@ -18,6 +18,15 @@ assert(isnumeric(x),'sample variable is not type numeric.')
 assert(islogical(playPlot),'plot variable is not type logical.')
 assert(isnumeric(numFilters), 'numFilters variable is not type numeric.')
 
+% Assign default values to empty variables
+if isempty(numFilters)
+    numFilters = 32;
+elseif isempty(frameDuration)
+    frameDuration = 25;
+elseif isempty(strideDuration)
+    strideDuration = 10;
+end
+
 % Peak Normalization
 if size(x,2) == 1
     peak = max(abs(x));
