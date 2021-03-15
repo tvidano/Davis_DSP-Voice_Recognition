@@ -25,6 +25,7 @@ numFilters = 28;
 numCoeffs = 10;
 frameDuration = 30;
 strideDuration = 15;
+
 classifier = speakerClassifier(numClusters,numFilters,numCoeffs,...
                                frameDuration,strideDuration);
 codeBooks = classifier.train(TrainDataBase);
