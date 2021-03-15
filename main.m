@@ -21,7 +21,7 @@ end
 
 % Build Codebook for each Train Data
 numClusters = 3;
-numFilters = 28;
+numFilters = 11;
 numCoeffs = 10;
 frameDuration = 30;
 strideDuration = 15;

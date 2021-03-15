@@ -108,7 +108,7 @@ while (iFrame <= numFrames)
     yDFT = fft(y);
     yDFT = yDFT(1:ceil(frameLen/2));
     yPS = (1/length(yDFT))*abs(yDFT.^2);
-%     yPS = abs(yDFT);
+%     yPS = abs(yDFT).^2;
     % Compute mel-frequency spectrum
 % 	filterBanks = H*yPS;
     filterBanks = abs(H).^2*yPS;
