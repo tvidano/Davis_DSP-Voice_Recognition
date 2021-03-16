@@ -45,8 +45,16 @@ testMatch = classifier.classify(TestDataBase);
 
 % Compute error statistics
 accuracy = mean(TestCases(:,2)==testMatch);
+fprintf('With Train/Test dataset provided: ');
 fprintf('Accuracy = %.1f %% \n',accuracy*100);
 
 %% Test Functionality
 classifier.test(TrainDataBase)
 
+%% Test with New Voices (roommates)
+roommatesDir = fullfile('Data','Roommates');
+[roomTest,roomTrain] = loadRoommatesData(roommatesDir);
+
+roomClassifier = speakerClassifier();
+[~] = roomClassifier.train(roomTrain);
+roomMatch = roomClassifier.classify(roomTest);
