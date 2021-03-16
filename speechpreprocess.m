@@ -1,21 +1,21 @@
-function [MFCCs] = speechpreprocess(x, fs, numFilters, ...
+function [MFCCs] = speechpreprocess(xRaw, fs, numFilters, ...
                                     frameDuration, strideDuration, ...
-                                    playPlot)
+                                    istest)
 %SPEACHPREPROCESS Reads a sound file and converts to MFCC sequence.
 %
-% Inputs:       x               audio sample
+% Inputs:       xRaw            audio sample
 %               numFilters      number of filters in the mel-freq. bank
 %               frameDuration   length of frame in ms
 %               strideDuration  millisec. to slide each frame forward
-%               playPlots       logical, plot the signal in time domain
+%               istest          logical, make plots for testing
 %
 % Outputs:
 %
 % Usage:
 
 % check valid data types
-assert(isnumeric(x),'sample variable is not type numeric.')
-assert(islogical(playPlot),'plot variable is not type logical.')
+assert(isnumeric(xRaw),'sample variable is not type numeric.')
+assert(islogical(istest),'plot variable is not type logical.')
 assert(isnumeric(numFilters), 'numFilters variable is not type numeric.')
 
 % Assign default values to empty variables
@@ -28,25 +28,25 @@ elseif isempty(strideDuration)
 end
 
 % Peak Normalization
-if size(x,2) == 1
-    peak = max(abs(x));
-    x = x/peak;
-elseif size(x,2) == 2
+if size(xRaw,2) == 1
+    peak = max(abs(xRaw));
+    x = xRaw/peak;
+elseif size(xRaw,2) == 2
     % Convert Stereo to Mono
-    xMono = x(:,1) + x(:,2);
+    xMono = xRaw(:,1) + xRaw(:,2);
     peak = max(abs(xMono));
     xMono = xMono/peak;
     
-    peakL = max(abs(x(:,1)));
-    peakR = max(abs(x(:,2)));
+    peakL = max(abs(xRaw(:,1)));
+    peakR = max(abs(xRaw(:,2)));
     stereoPeak = max([peakL, peakR]);
     
     xMono = xMono*stereoPeak;
     x = xMono;
-elseif size(x,2) > 2
+elseif size(xRaw,2) > 2
     error('speachpreprocess:tooManyChannels',...
         'Error. \nAudio file must contain 1 or 2 channels, not %i',...
-        size(x,2));
+        size(xRaw,2));
 end
 
 % Get ground-truth Spectrogram..
@@ -56,25 +56,6 @@ end
 % fprintf('Num bands: %d\n',numBands);
 % fprintf('Num frames: %d\n',numFrames);
 % melSpectrogram(x,fs);
-
-% Test 2: Plot audio in time domain and play audio
-if playPlot
-    xLen = length(x);
-    t = 0:1/fs:xLen/fs-1/fs;
-    
-    figure;
-    plot(t,x');
-    title('Audio File in Time Domain');
-    xlabel('Time [s]');
-    ylabel('Amplitude');
-    grid on;
-    
-    numMs = 256/fs*1000;
-    fprintf('There are %.2f ms of speech in 256 samples.\n',numMs);
-    
-    % Play audio file
-    sound(x,fs);
-end
 
 % Pre-Emphasis Filter
 alpha = 0.95;
@@ -92,8 +73,8 @@ xLen = length(x);
 
 hammingWindow = hamming(frameLen,'periodic');
 H = melBank(frameLen, numFilters, 0, fs/2, fs);
-% figure; plot(linspace(0,fs/2,length(H)),H); title('Mel Filter Banks');
 
+spectrums = zeros(ceil(frameLen/2), numFrames);
 melSpectrums = zeros(numFilters, numFrames);
 % MFCCs = zeros(numCoeffs, numFrames);
 MFCCs = zeros(numFilters, numFrames);
@@ -107,7 +88,7 @@ while (iFrame <= numFrames)
     % Compute fourier spectrum and power spectrum
     yDFT = fft(y);
     yDFT = yDFT(1:ceil(frameLen/2));
-    yPS = (1/length(yDFT))*abs(yDFT.^2);
+    yPS = (1/length(yDFT))*abs(yDFT).^2;
 %     yPS = abs(yDFT).^2;
     % Compute mel-frequency spectrum
 % 	filterBanks = H*yPS;
@@ -120,6 +101,7 @@ while (iFrame <= numFrames)
     MFCC = (MFCC - mean(MFCC))/std(MFCC);
     
     % Store
+    spectrums(:,iFrame) = yPS;
     melSpectrums(:,iFrame) = MFS;
     MFCCs(:,iFrame) = MFCC;
     
@@ -127,20 +109,57 @@ while (iFrame <= numFrames)
     iFrame = iFrame + 1;
 end
 
-% Visualize Mel Spectrogram
-% t = linspace(0,xLen/fs,numFrames);
-% f = linspace(0,fs/2,numFilters);
-% figure; surf(t,f,melSpectrums, 'EdgeColor', 'none');
-% cBar = colorbar; ylabel(cBar, 'Power (dB)');
-% view(0,90); xlabel('Time [s]'); ylabel('Frequency [Hz]');
-% axis tight;
-
-% Visualize MFCCs
-% coeffs = 2:numCoeffs+1;
-% coeffs = 1:size(MFCCs,1);
-% figure; surf(t,coeffs,MFCCs, 'EdgeColor', 'none');
-% cBar = colorbar; ylabel(cBar, 'Power (dB)');
-% view(0,90); xlabel('Time [s]'); ylabel('MFCC Number');
-% axis tight;
+% Test 2: Plot audio in time domain and play audio
+if istest
+    % Plot Audio in Time Domain
+    xLen = length(xRaw);
+    t = 0:1/fs:xLen/fs-1/fs;
+    
+    figure;
+    plot(t,xRaw');
+    title('Test 2: Raw Audio File in Time Domain');
+    xlabel('Time [s]');
+    ylabel('Amplitude');
+    grid on;
+    
+    % Calculate number of ms in 256 samples..
+    numMs = 256/fs*1000;
+    fprintf('Test 2: There are %.2f ms of speech in 256 samples.\n',numMs);
+    
+    % Play audio file
+    sound(xRaw,fs);
+    
+    % Test 3 Plot Mel Filter Banks
+    figure;
+    plot(linspace(0,fs/2,length(H)),H); 
+    title('Mel Filter Banks'); xlabel('Freq [Hz]'); ylabel('Amplitude');
+    
+    % Test 4 Visualize Spectrogram
+    t = linspace(0,xLen/fs,numFrames);
+    f = linspace(0,fs/2,ceil(frameLen/2));
+    figure; surf(t,f,spectrums, 'EdgeColor', 'none');
+    cBar = colorbar; ylabel(cBar, 'Power (dB)');
+    title('Test 4: Spectrogram Before Mel-freq Wrapping')
+    view(0,90); xlabel('Time [s]'); ylabel('Frequency [Hz]');
+    axis tight;
+    
+    % Test 4 Visualize Mel Spectrogram
+    t = linspace(0,xLen/fs,numFrames);
+    f = linspace(0,fs/2,numFilters);
+    figure; surf(t,f,melSpectrums, 'EdgeColor', 'none');
+    cBar = colorbar; ylabel(cBar, 'Power (dB)');
+    title('Test 4: Spectrogram After Mel-freq Wrapping')
+    view(0,90); xlabel('Time [s]'); ylabel('Frequency [Hz]');
+    axis tight;
+    
+    % Test 5 Visualize MFCCs
+    coeffs = 2:length(MFCCs);
+    coeffs = 1:size(MFCCs,1);
+    figure; surf(t,coeffs,MFCCs, 'EdgeColor', 'none');
+    title('Test 5: Cepstrogram, Spectrogram of MFCCs')
+    cBar = colorbar; ylabel(cBar, 'Power (dB)');
+    view(0,90); xlabel('Time [s]'); ylabel('MFCC Number');
+    axis tight;
+end
 
 end
