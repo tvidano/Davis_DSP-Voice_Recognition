@@ -134,36 +134,37 @@ classdef speakerClassifier < handle
             %
             % Outputs:  status      indicates completion status of function
             %
-            
             numSpeakers = length(speakerSamples);
             obj.speakerModels = cell(numSpeakers,1);
             x = speakerSamples{1}{1};
             fs = speakerSamples{1}{2};
-            sound(x,fs);
-            xLen = length(x);
-            t = 0:1/fs:xLen/fs-1/fs;
-            figure;
-            plot(t,x');
-            title('Test 2: Audio File in Time Domain');
-            xlabel('Time [s]');
-            ylabel('Amplitude');
-            grid on;
-            numMs = 256/fs*1000;
-            fprintf('There are %.2f ms of speech in 256 samples.\n',numMs);
+            MFCCs = speechpreprocess(x,fs,numFilters,frameDuration,strideDuration,true);
+ 
+%             sound(x,fs);
+%             xLen = length(x);
+%             t = 0:1/fs:xLen/fs-1/fs;
+%             figure;
+%             plot(t,x');
+%             title('Test 2: Audio File in Time Domain');
+%             xlabel('Time [s]');
+%             ylabel('Amplitude');
+%             grid on;
+%             numMs = 256/fs*1000;
+%             fprintf('There are %.2f ms of speech in 256 samples.\n',numMs);
             
-            frameLen = round(frameDuration*10^-3*fs);
-            H = melBank(frameLen, numFilters, 0, fs/2, fs);
-            figure; 
-            plot(linspace(0,fs/2,length(H)),H); title('Test 3: Mel Filter Banks');
+%             frameLen = round(frameDuration*10^-3*fs);
+%             H = melBank(frameLen, numFilters, 0, fs/2, fs);
+%             figure; 
+%             plot(linspace(0,fs/2,length(H)),H); title('Test 3: Mel Filter Banks');
             
             MFCC = speechpreprocess(x,fs,numFilters,...
                             frameDuration,strideDuration,false);
             
             [~,C,~] = kmeans(MFCC(2:end,:)',numClusters,'Replicates',20,'MaxIter',80);
-            figure;
-            scatter(MFCC(2,:),MFCC(3,:))
-            title('Test4: MFCC')
-            xlabel('MFCC 2');ylabel('MFCC 3'); zlabel('MFCC 4');
+%             figure;
+%             scatter(MFCC(2,:),MFCC(3,:))
+%             title('Test4: MFCC')
+%             xlabel('MFCC 2');ylabel('MFCC 3'); zlabel('MFCC 4');
             
             x2 = speakerSamples{2}{1};
             fs2 = speakerSamples{2}{2};
