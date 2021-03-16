@@ -49,14 +49,6 @@ elseif size(xRaw,2) > 2
         size(xRaw,2));
 end
 
-% Get ground-truth Spectrogram..
-% figure;
-% S = melSpectrogram(x,fs);
-% [numBands,numFrames] = size(S);
-% fprintf('Num bands: %d\n',numBands);
-% fprintf('Num frames: %d\n',numFrames);
-% melSpectrogram(x,fs);
-
 % Pre-Emphasis Filter
 alpha = 0.95;
 x = x - alpha*[x(2:end);0];
@@ -76,7 +68,6 @@ H = melBank(frameLen, numFilters, 0, fs/2, fs);
 
 spectrums = zeros(ceil(frameLen/2), numFrames);
 melSpectrums = zeros(numFilters, numFrames);
-% MFCCs = zeros(numCoeffs, numFrames);
 MFCCs = zeros(numFilters, numFrames);
 iSample = 1;
 iFrame = 1;
@@ -94,10 +85,8 @@ while (iFrame <= numFrames)
 % 	filterBanks = H*yPS;
     filterBanks = abs(H).^2*yPS;
     MFS = db(filterBanks);
-%     MFS = MFS - mean(MFS);
     % Apply DCT..
     MFCC = dct(MFS);
-%     MFCC = MFCC(2:numCoeffs+1);
     MFCC = (MFCC - mean(MFCC))/std(MFCC);
     
     % Store
@@ -153,7 +142,6 @@ if istest
     axis tight;
     
     % Test 5 Visualize MFCCs
-    coeffs = 2:length(MFCCs);
     coeffs = 1:size(MFCCs,1);
     figure; surf(t,coeffs,MFCCs, 'EdgeColor', 'none');
     title('Test 5: Cepstrogram, Spectrogram of MFCCs')

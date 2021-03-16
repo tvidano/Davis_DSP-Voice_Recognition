@@ -28,10 +28,8 @@ while bookLen < numCodes
     while err > epsilon
         prevDist = newDist;
         iter = iter + 1;
-        %fprintf('iter: %.0f ',iter);
         [dist, iClosest] = pdist2(codeBook,dataM,'euclidean','Smallest',1);
         avgDist = mean(dist);
-%         fprintf('average dist: %.2f\n',avgDist);
         for iCode = 1:bookLen
             partM = dataM(iClosest==iCode,:);
             % Calculate new codes to minimize distance..
@@ -40,7 +38,6 @@ while bookLen < numCodes
         [newDist,~] = pdist2(codeBook,dataM,'euclidean','Smallest',1);
         newDist = mean(newDist);
         err = (prevDist - newDist)/prevDist;
-        %fprintf('norm dist: %.2f\n',err);
         if iter > 100
             break
         end

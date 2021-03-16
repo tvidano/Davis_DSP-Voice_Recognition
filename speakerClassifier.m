@@ -77,11 +77,8 @@ classdef speakerClassifier < handle
                 fs = speakerSamples{i}{2};
                 MFCCs = speechpreprocess(x,fs,obj.numFilters,...
                             obj.frameDuration,obj.strideDuration,false);
-%                 [~,C,~] = kmeans(MFCCs(2:obj.numCoeffs+1,:)',...
-%                                  obj.numClusters,'Replicates',20,...
-%                                  'MaxIter',80);
-%                 obj.speakerModels{i} = C;
-                obj.speakerModels{i} = lbgClustering(MFCCs(2:obj.numCoeffs+1,:)',obj.numClusters,.01);
+                obj.speakerModels{i} = lbgClustering(...
+                    MFCCs(2:obj.numCoeffs+1,:)',obj.numClusters,.01);
             end
             codeBooks = obj.speakerModels;
         end
@@ -142,16 +139,14 @@ classdef speakerClassifier < handle
                 obj.frameDuration,obj.strideDuration,true);
             
             % Cluster Speaker 1
-            [~,C,~] = kmeans(MFCCs(2:end,:)',obj.numClusters,...
-                'Replicates',20,'MaxIter',80);
+            C = lbgClustering(MFCCs(2:end,:)',obj.numClusters,.01);
             
             % Cluster Speaker 2
             x2 = speakerSamples{2}{1};
             fs2 = speakerSamples{2}{2};
             MFCC2 = speechpreprocess(x2,fs2,obj.numFilters,...
                             obj.frameDuration,obj.strideDuration,false);
-            [~,C2,~] = kmeans(MFCC2(2:end,:)',obj.numClusters,...
-                'Replicates',20,'MaxIter',80);
+            C2 = lbgClustering(MFCC2(2:end,:)',obj.numClusters,.01);
             
             % Plot MFCC-2 vs. MFCC-3
             figure; hold on;
