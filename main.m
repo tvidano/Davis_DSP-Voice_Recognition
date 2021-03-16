@@ -58,3 +58,8 @@ roommatesDir = fullfile('Data','Roommates');
 roomClassifier = speakerClassifier();
 [~] = roomClassifier.train(roomTrain);
 [roomMatch,err1] = roomClassifier.classify(roomTest);
+
+% Compute error statistics
+accuracy = mean([1:4]'==cell2mat(roomMatch));
+fprintf('With roommate dataset: ');
+fprintf('Accuracy = %.1f %% \n',accuracy*100);
