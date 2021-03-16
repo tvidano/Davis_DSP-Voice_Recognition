@@ -132,7 +132,7 @@ if istest
     % Test 3 Plot Mel Filter Banks
     figure;
     plot(linspace(0,fs/2,length(H)),H); 
-    title('Mel Filter Banks'); xlabel('Freq [Hz]'); ylabel('Amplitude');
+    title('Test 3: Mel Filter Banks'); xlabel('Freq [Hz]'); ylabel('Amplitude');
     
     % Test 4 Visualize Spectrogram
     t = linspace(0,xLen/fs,numFrames);

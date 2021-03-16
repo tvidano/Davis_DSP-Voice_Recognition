@@ -121,7 +121,7 @@ classdef speakerClassifier < handle
             end
         end
         
-        function status = test(obj,speakerSamples)
+        function [] = test(obj,speakerSamples)
             %TEST outputs functional test data as outlined in project
             %guidlines.
             %
@@ -155,15 +155,17 @@ classdef speakerClassifier < handle
             
             % Plot MFCC-2 vs. MFCC-3
             figure; hold on;
-            scatter(MFCCs(2,:),MFCCs(3,:))
-            scatter(MFCC2(2,:),MFCC2(3,:))
+            scatter(MFCCs(2,:),MFCCs(3,:),'r')
+            scatter(MFCC2(2,:),MFCC2(3,:),'b')
             hold off;
             title('Test5')
             
             % Plot MFCC-2 vs. MFCC-3 with Centroids
             figure; hold on;
-            scatter(C(2,:),C(3,:))
-            scatter(C2(2,:),C2(3,:))
+            scatter(MFCCs(2,:),MFCCs(3,:),'r')
+            scatter(MFCC2(2,:),MFCC2(3,:),'b')
+            scatter(C(:,1),C(:,2),100,'filled','rd')
+            scatter(C2(:,1),C2(:,2),100,'filled','bd')
             hold off;
             title('Test6')
                         
