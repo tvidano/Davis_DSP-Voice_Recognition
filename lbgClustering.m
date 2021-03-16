@@ -41,7 +41,7 @@ while bookLen < numCodes
         newDist = mean(newDist);
         err = (prevDist - newDist)/prevDist;
         %fprintf('norm dist: %.2f\n',err);
-        if iter > 10
+        if iter > 100
             break
         end
     end

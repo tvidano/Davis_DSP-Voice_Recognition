@@ -1,9 +1,9 @@
-function [MFCCs] = speechpreprocess(x, fs, numFilters, ...
+function [MFCCs] = speechpreprocess(xRaw, fs, numFilters, ...
                                     frameDuration, strideDuration, ...
                                     istest)
 %SPEACHPREPROCESS Reads a sound file and converts to MFCC sequence.
 %
-% Inputs:       x               audio sample
+% Inputs:       xRaw            audio sample
 %               numFilters      number of filters in the mel-freq. bank
 %               frameDuration   length of frame in ms
 %               strideDuration  millisec. to slide each frame forward
@@ -14,7 +14,7 @@ function [MFCCs] = speechpreprocess(x, fs, numFilters, ...
 % Usage:
 
 % check valid data types
-assert(isnumeric(x),'sample variable is not type numeric.')
+assert(isnumeric(xRaw),'sample variable is not type numeric.')
 assert(islogical(istest),'plot variable is not type logical.')
 assert(isnumeric(numFilters), 'numFilters variable is not type numeric.')
 
@@ -28,25 +28,25 @@ elseif isempty(strideDuration)
 end
 
 % Peak Normalization
-if size(x,2) == 1
-    peak = max(abs(x));
-    x = x/peak;
-elseif size(x,2) == 2
+if size(xRaw,2) == 1
+    peak = max(abs(xRaw));
+    x = xRaw/peak;
+elseif size(xRaw,2) == 2
     % Convert Stereo to Mono
-    xMono = x(:,1) + x(:,2);
+    xMono = xRaw(:,1) + xRaw(:,2);
     peak = max(abs(xMono));
     xMono = xMono/peak;
     
-    peakL = max(abs(x(:,1)));
-    peakR = max(abs(x(:,2)));
+    peakL = max(abs(xRaw(:,1)));
+    peakR = max(abs(xRaw(:,2)));
     stereoPeak = max([peakL, peakR]);
     
     xMono = xMono*stereoPeak;
     x = xMono;
-elseif size(x,2) > 2
+elseif size(xRaw,2) > 2
     error('speachpreprocess:tooManyChannels',...
         'Error. \nAudio file must contain 1 or 2 channels, not %i',...
-        size(x,2));
+        size(xRaw,2));
 end
 
 % Get ground-truth Spectrogram..
@@ -112,12 +112,12 @@ end
 % Test 2: Plot audio in time domain and play audio
 if istest
     % Plot Audio in Time Domain
-    xLen = length(x);
+    xLen = length(xRaw);
     t = 0:1/fs:xLen/fs-1/fs;
     
     figure;
-    plot(t,x');
-    title('Test 2: Audio File in Time Domain');
+    plot(t,xRaw');
+    title('Test 2: Raw Audio File in Time Domain');
     xlabel('Time [s]');
     ylabel('Amplitude');
     grid on;
@@ -127,7 +127,7 @@ if istest
     fprintf('Test 2: There are %.2f ms of speech in 256 samples.\n',numMs);
     
     % Play audio file
-    sound(x,fs);
+    sound(xRaw,fs);
     
     % Test 3 Plot Mel Filter Banks
     figure;
