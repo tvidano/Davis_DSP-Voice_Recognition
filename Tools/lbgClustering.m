@@ -13,7 +13,7 @@ assert(mod(log2(numCodes),1)==0,['Invalid value, numCodes should be a ',...
 
 % initial guess of codeBook
 codeBook = mean(dataM,1);
-avgDist = mean(disteu(codeBook',dataM'));
+avgDist = mean(pdist2(codeBook,dataM,'euclidean','Smallest',1));
 bookLen = size(codeBook,1);
 while bookLen < numCodes
     % Split codeBook into two..
