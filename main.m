@@ -20,11 +20,11 @@ for i = 1:numSpeakers
 end 
 
 % Build Codebook for each Train Data
-numClusters = 3;
-numFilters = 11;
-numCoeffs = 10;
-frameDuration = 30;
-strideDuration = 15;
+numClusters = 8;
+numFilters = 32;
+numCoeffs = 12;
+frameDuration = 25;
+strideDuration = 10;
 
 classifier = speakerClassifier(numClusters,numFilters,numCoeffs,...
                                frameDuration,strideDuration);
