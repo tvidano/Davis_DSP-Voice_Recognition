@@ -41,10 +41,10 @@ for i = 1:8
 end
 
 %% Classify Test Data
-testMatch = classifier.classify(TestDataBase);
+[testMatch,err] = classifier.classify(TestDataBase);
 
 % Compute error statistics
-accuracy = mean(TestCases(:,2)==testMatch);
+accuracy = mean(TestCases(:,2)==cell2mat(testMatch));
 fprintf('With Train/Test dataset provided: ');
 fprintf('Accuracy = %.1f %% \n',accuracy*100);
 
@@ -57,4 +57,4 @@ roommatesDir = fullfile('Data','Roommates');
 
 roomClassifier = speakerClassifier();
 [~] = roomClassifier.train(roomTrain);
-roomMatch = roomClassifier.classify(roomTest);
+[roomMatch,err1] = roomClassifier.classify(roomTest);

@@ -79,21 +79,35 @@ classdef speakerClassifier < handle
                             obj.frameDuration,obj.strideDuration,false);
                 obj.speakerModels{i} = lbgClustering(...
                     MFCCs(2:obj.numCoeffs+1,:)',obj.numClusters,.01);
+%                 [~,obj.speakerModels{i},~] = kmeans(...
+%                   MFCCs(2:obj.numCoeffs+1,:)',obj.numClusters);
             end
             codeBooks = obj.speakerModels;
         end
         
-        function [speakers] = classify(obj,testSamples)
+        function [speakers,err] = classify(obj,testSamples,varargin)
             %CLASSIFY classifies new speaker samples based on trained
             % classifier. 
             %
             % Inputs:   testSamples     cells containing test samples
+            %           rejectTol       tolerance which to reject pairings
             %
             % Outputs:  speakers        speakers identified using indexes
             %                           of the trained codeBooks.
+            %           err             vector containing error metric for
+            %                           each test speaker.
             
+            if nargin == 3
+                rejectTol = varargin{1};
+            elseif nargin == 2
+                rejectTol = 0.75;
+            else
+                error(['Incorrect number of inputs, classify method ',...
+                    'takes maximum 3 inputs other than object.']);
+            end
             numTest = length(testSamples);
-            speakers = zeros(numTest,1);
+            speakers = cell(numTest,1);
+            err = zeros(numTest,1);
             numSpeakers = length(obj.speakerModels);
             for i = 1:numTest
                 x = testSamples{i}{1};
@@ -114,7 +128,11 @@ classdef speakerClassifier < handle
                         iLowest = j;
                     end
                 end
-                speakers(i) = iLowest;
+                if lowestDist > rejectTol
+                    iLowest = "No match found";
+                end
+                speakers{i} = iLowest;
+                err(i) = lowestDist;
             end
         end
         
@@ -131,8 +149,6 @@ classdef speakerClassifier < handle
             % Outputs:  status      indicates completion status of function
             
             % Use the first two speaker samples..
-            numSpeakers = length(speakerSamples);
-            obj.speakerModels = cell(numSpeakers,1);
             x = speakerSamples{1}{1};
             fs = speakerSamples{1}{2};
             MFCCs = speechpreprocess(x,fs,obj.numFilters,...
@@ -163,8 +179,6 @@ classdef speakerClassifier < handle
             scatter(C2(:,1),C2(:,2),100,'filled','bd')
             hold off;
             title('Test6')
-                        
-            status =1;
         end
             
     end
