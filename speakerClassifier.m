@@ -121,7 +121,7 @@ classdef speakerClassifier < handle
             end
         end
         
-        function status = test(obj,speakerSamples,numFilters,...
+        function [] = test(obj,speakerSamples,numFilters,...
                                 frameDuration,strideDuration,numClusters)
             %TEST outputs functional test data as outlined in project
             %guidlines.
@@ -172,18 +172,68 @@ classdef speakerClassifier < handle
             [~,C2,~] = kmeans(MFCC2(2:end,:)',numClusters,'Replicates',20,'MaxIter',80);
             
             figure; hold on;
-            scatter(MFCC(2,:),MFCC(3,:))
-            scatter(MFCC2(2,:),MFCC2(3,:))
+            scatter(MFCC(2,:),MFCC(3,:),'r')
+            scatter(MFCC2(2,:),MFCC2(3,:),'b')
             hold off;
             title('Test5')
             
             figure; hold on;
-            scatter(C(2,:),C(3,:))
-            scatter(C2(2,:),C2(3,:))
+            scatter(MFCC(2,:),MFCC(3,:),'r')
+            scatter(MFCC2(2,:),MFCC2(3,:),'b')
+            scatter(C(:,1),C(:,2),100,'filled','rd')
+            scatter(C2(:,1),C2(:,2),100,'filled','bd')
             hold off;
             title('Test6')
-                        
-            status =1;
+            
+            hammingWindow = hamming(frameLen,'periodic');
+            frameDelay = round(strideDuration*10^-3*fs); % samples
+            numFrames = ceil((xLen - frameLen)/frameDelay) + 1;
+            padLen = numFrames*frameDelay + frameLen;
+            x = [x;zeros(padLen - xLen,1)];
+            xLen = length(x);
+            iSample = 1;
+            iFrame = 1;
+            while (iFrame <= numFrames)
+                    % Frame blocking
+                frame = x(iSample:iSample+frameLen-1);
+                % Window each frame
+                y = frame.*hammingWindow;
+                % Compute fourier spectrum and power spectrum
+                yDFT = fft(y);
+                yDFT = yDFT(1:ceil(frameLen/2));
+                yPS = (1/length(yDFT))*abs(yDFT.^2);
+                % Compute mel-frequency spectrum
+                filterBanks = abs(H).^2*yPS;
+                MFS = db(filterBanks);
+                % Apply DCT..
+                MFCC = dct(MFS);
+                MFCC = (MFCC - mean(MFCC))/std(MFCC);
+    
+                % Store
+                melSpectrums(:,iFrame) = MFS;
+                MFCCs(:,iFrame) = MFCC;
+                PS(:,iFrame) = yPS;
+    
+                iSample = iSample + frameDelay;
+                iFrame = iFrame + 1;
+            end
+            
+            figure;
+            subplot(1,2,1)
+            % Visualize Mel Spectrogram
+             t = linspace(0,xLen/fs,numFrames);
+             f = linspace(0,fs/2,numFilters);
+             surf(t,f,melSpectrums, 'EdgeColor', 'none');
+             cBar = colorbar; ylabel(cBar, 'Power (dB)');
+             view(0,90); xlabel('Time [s]'); ylabel('Frequency [Hz]');
+             axis tight;
+            subplot(1,2,2)
+            t = linspace(0,xLen/fs,numFrames);
+             f = linspace(0,fs/2,157);
+              surf(t,f,PS, 'EdgeColor', 'none');
+             cBar = colorbar; ylabel(cBar, 'Power (dB)');
+             view(0,90); xlabel('Time [s]'); ylabel('Frequency [Hz]');
+             axis tight;
         end
             
     end
