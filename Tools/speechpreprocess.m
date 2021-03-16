@@ -1,10 +1,11 @@
-function [MFCCs] = speechpreprocess(xRaw, fs, numFilters, ...
+function [features] = speechpreprocess(xRaw, fs, numFilters, numCoeffs,...
                                     frameDuration, strideDuration, ...
                                     istest)
 %SPEACHPREPROCESS Reads a sound file and converts to MFCC sequence.
 %
 % Inputs:       xRaw            audio sample
 %               numFilters      number of filters in the mel-freq. bank
+%               numCoeffs       number of MFCC (ignoring the 1st) to return
 %               frameDuration   length of frame in ms
 %               strideDuration  millisec. to slide each frame forward
 %               istest          logical, make plots for testing
@@ -50,7 +51,7 @@ elseif size(xRaw,2) > 2
 end
 
 % Pre-Emphasis Filter
-alpha = 0.95;
+alpha = 0.98;
 x = x - alpha*[x(2:end);0];
 
 % Compute CFCC
@@ -85,9 +86,12 @@ while (iFrame <= numFrames)
 % 	filterBanks = H*yPS;
     filterBanks = abs(H).^2*yPS;
     MFS = db(filterBanks);
+%     MFS = filterBanks.^(1/3);
+%     MFS = log(filterBanks);
     % Apply DCT..
     MFCC = dct(MFS);
-    MFCC = (MFCC - mean(MFCC))/std(MFCC);
+%     MFCC = (MFCC - mean(MFCC))/std(MFCC);
+    MFCC = normalize(MFCC,'center','mean');
     
     % Store
     spectrums(:,iFrame) = yPS;
@@ -97,6 +101,15 @@ while (iFrame <= numFrames)
     iSample = iSample + frameDelay;
     iFrame = iFrame + 1;
 end
+MFCCs = MFCCs(2:numCoeffs+1,:);
+% MFCCs = normalize(MFCCs,2);
+% MFCCs = (MFCCs - mean(MFCCs,'all'))/std(MFCCs,1,'all');
+% MFCCs = (MFCCs - mean(MFCCs,'all'));
+
+% Compute Deltas and Delta-Deltas with circular deltas..
+delta = [MFCCs(:,end) - MFCCs(:,1), MFCCs(:,2:end) - MFCCs(:,1:end-1)];
+dDelta = [delta(:,end) - delta(:,1), delta(:,2:end) - delta(:,1:end-1)];
+features = [MFCCs,delta,dDelta];
 
 % Test 2: Plot audio in time domain and play audio
 if istest
@@ -126,7 +139,7 @@ if istest
     % Test 4 Visualize Spectrogram
     t = linspace(0,xLen/fs,numFrames);
     f = linspace(0,fs/2,ceil(frameLen/2));
-    figure; surf(t,f,spectrums, 'EdgeColor', 'none');
+    figure; surf(t,f,db(spectrums), 'EdgeColor', 'none');
     cBar = colorbar; ylabel(cBar, 'Power (dB)');
     title('Test 4: Spectrogram Before Mel-freq Wrapping')
     view(0,90); xlabel('Time [s]'); ylabel('Frequency [Hz]');
@@ -142,10 +155,10 @@ if istest
     axis tight;
     
     % Test 5 Visualize MFCCs
-    coeffs = 1:size(MFCCs,1);
+    coeffs = 2:size(MFCCs,1)+1;
     figure; surf(t,coeffs,MFCCs, 'EdgeColor', 'none');
     title('Test 5: Cepstrogram, Spectrogram of MFCCs')
-    cBar = colorbar; ylabel(cBar, 'Power (dB)');
+    cBar = colorbar; ylabel(cBar, 'DCT Amplitude');
     view(0,90); xlabel('Time [s]'); ylabel('MFCC Number');
     axis tight;
 end

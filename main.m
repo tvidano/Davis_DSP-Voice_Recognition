@@ -20,7 +20,7 @@ for i = 1:numSpeakers
 end 
 
 %% Build Codebook for each Train Data
-numClusters = 8;
+numClusters = 32;
 numFilters = 32;
 numCoeffs = 12;
 frameDuration = 25;
@@ -72,9 +72,22 @@ for i = 1:8
     [audio,Fs] = audioread(fullfile(TestDir,filename));
     TestDataBase{i} = {audio,Fs};
 end
-numClusters = 16;
-numFilters = 40;
-numCoeffs = 24;
+numClusters = 8;
+numFilters = 32;
+numCoeffs = 11;
 rejector = speakerClassifier(numClusters,numFilters,numCoeffs);
 [~] = rejector.train(TestDataBase);
-[rejectMatch,err2] = rejector.classify(TrainDataBase,0.7);
+[rejectMatch,err2] = rejector.classify(TrainDataBase,40);
+
+% Compute error statistics
+expected = {1;2;3;4;5;6;7;8;"No match found";"No match found";"No match found"};
+correct = 0;
+for i = 1:length(rejectMatch)
+    try
+        correct = correct + (expected{i} == rejectMatch{i});
+    catch
+    end
+end
+accuracy = correct/length(rejectMatch);
+fprintf('With rejection: ');
+fprintf('Accuracy = %.1f %% \n',accuracy*100);
