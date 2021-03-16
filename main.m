@@ -48,6 +48,9 @@ testMatch = classifier.classify(TestDataBase);
 accuracy = mean(TestCases(:,2)==testMatch);
 fprintf('Accuracy = %.1f %% \n',accuracy*100);
 
+%test functionality
+status = classifier.test(TrainDataBase,32,25,10,numClusters)
+
 % path = fullfile('Data','Test_Data','s7.wav');
 % MFCC1 = speechpreprocess(path,uint8(32),uint8(12),false);
 % [audioIn, fs] = audioread(path);
