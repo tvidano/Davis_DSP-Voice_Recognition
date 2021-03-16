@@ -63,3 +63,18 @@ roomClassifier = speakerClassifier();
 accuracy = mean([1:4]'==cell2mat(roomMatch));
 fprintf('With roommate dataset: ');
 fprintf('Accuracy = %.1f %% \n',accuracy*100);
+
+%% Test Rejection Ability
+TestDir = fullfile('Data','Test_Data');
+TestDataBase = cell(1,8);
+for i = 1:8
+    filename = 's' + string(i) + '.wav';
+    [audio,Fs] = audioread(fullfile(TestDir,filename));
+    TestDataBase{i} = {audio,Fs};
+end
+numClusters = 16;
+numFilters = 40;
+numCoeffs = 24;
+rejector = speakerClassifier(numClusters,numFilters,numCoeffs);
+[~] = rejector.train(TestDataBase);
+[rejectMatch,err2] = rejector.classify(TrainDataBase,0.7);
