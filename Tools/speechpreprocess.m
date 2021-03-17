@@ -63,6 +63,8 @@ numFrames = ceil((xLen - frameLen)/frameDelay) + 1;
 padLen = numFrames*frameDelay + frameLen;
 x = [x;zeros(padLen - xLen,1)];
 xLen = length(x);
+% Remove the mean to prevent large DC component leakage
+x = x - mean(x);
 
 hammingWindow = hamming(frameLen,'periodic');
 H = melBank(frameLen, numFilters, 0, fs/2, fs);
@@ -81,7 +83,6 @@ while (iFrame <= numFrames)
     yDFT = fft(y);
     yDFT = yDFT(1:ceil(frameLen/2));
     yPS = (1/length(yDFT))*abs(yDFT).^2;
-%     yPS = abs(yDFT).^2;
     % Compute mel-frequency spectrum
 % 	filterBanks = H*yPS;
     filterBanks = abs(H).^2*yPS;
