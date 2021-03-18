@@ -51,43 +51,76 @@ fprintf('Accuracy = %.1f %% \n',accuracy*100);
 %% Test Functionality
 classifier.test(TrainDataBase)
 
-%% Test with New Voices (roommates)
-roommatesDir = fullfile('Data','Roommates');
-[roomTest,roomTrain] = loadRoommatesData(roommatesDir);
+% %% Test with New Voices (roommates)
+% roommatesDir = fullfile('Data','Roommates');
+% [roomTest,roomTrain] = loadRoommatesData(roommatesDir);
+% 
+% roomClassifier = speakerClassifier();
+% [~] = roomClassifier.train(roomTrain);
+% [roomMatch,err1] = roomClassifier.classify(roomTest);
+% 
+% % Compute error statistics
+% accuracy = mean([1:4]'==cell2mat(roomMatch));
+% fprintf('With roommate dataset: ');
+% fprintf('Accuracy = %.1f %% \n',accuracy*100);
+% 
+% %% Test Rejection Ability
+% TestDir = fullfile('Data','Test_Data');
+% TestDataBase = cell(1,8);
+% for i = 1:8
+%     filename = 's' + string(i) + '.wav';
+%     [audio,Fs] = audioread(fullfile(TestDir,filename));
+%     TestDataBase{i} = {audio,Fs};
+% end
+% numClusters = 8;
+% numFilters = 32;
+% numCoeffs = 11;
+% rejector = speakerClassifier(numClusters,numFilters,numCoeffs);
+% [~] = rejector.train(TestDataBase);
+% [rejectMatch,err2] = rejector.classify(TrainDataBase,40);
+% 
+% % Compute error statistics
+% expected = {1;2;3;4;5;6;7;8;"No match found";"No match found";"No match found"};
+% correct = 0;
+% for i = 1:length(rejectMatch)
+%     try
+%         correct = correct + (expected{i} == rejectMatch{i});
+%     catch
+%     end
+% end
+% accuracy = correct/length(rejectMatch);
+% fprintf('With rejection: ');
+% fprintf('Accuracy = %.1f %% \n',accuracy*100);
 
-roomClassifier = speakerClassifier();
-[~] = roomClassifier.train(roomTrain);
-[roomMatch,err1] = roomClassifier.classify(roomTest);
-
-% Compute error statistics
-accuracy = mean([1:4]'==cell2mat(roomMatch));
-fprintf('With roommate dataset: ');
-fprintf('Accuracy = %.1f %% \n',accuracy*100);
-
-%% Test Rejection Ability
-TestDir = fullfile('Data','Test_Data');
-TestDataBase = cell(1,8);
-for i = 1:8
-    filename = 's' + string(i) + '.wav';
-    [audio,Fs] = audioread(fullfile(TestDir,filename));
-    TestDataBase{i} = {audio,Fs};
-end
-numClusters = 8;
-numFilters = 32;
-numCoeffs = 11;
-rejector = speakerClassifier(numClusters,numFilters,numCoeffs);
-[~] = rejector.train(TestDataBase);
-[rejectMatch,err2] = rejector.classify(TrainDataBase,40);
-
-% Compute error statistics
-expected = {1;2;3;4;5;6;7;8;"No match found";"No match found";"No match found"};
+%% Notch Filters to test Robustness of Model
 correct = 0;
-for i = 1:length(rejectMatch)
-    try
-        correct = correct + (expected{i} == rejectMatch{i});
-    catch
+for i = 1:100
+   r = rand;
+   f1 = r-0.005;
+   f2 = r+0.005;
+   if (f1 < 0)
+       f1 = 0.0001;
+   end
+   if (f2 > 1)
+       f2 = 0.9999;
+   end
+   f = [f1 f2];
+   [b,a] = butter(6,f,'stop');
+   %collect filtered test data
+   TestDir = fullfile('Data','Test_Data');
+   FilteredDataBase = cell(1,8);
+   TestCases = [(1:8)',randperm(8)'];
+   for i = 1:8
+       filename = 's' + string(TestCases(i,2)) + '.wav';
+       [audio,Fs] = audioread(fullfile(TestDir,filename));
+       audiof = filter(b,a,audio);
+       FilteredDataBase{i} = {audiof,Fs};
+   end 
+   [testMatch,err] = classifier.classify(FilteredDataBase);
+    % Compute error statistics
+    accuracy = mean(TestCases(:,2)==cell2mat(testMatch));
+    if (accuracy == 1)
+        correct = correct + 1;
     end
 end
-accuracy = correct/length(rejectMatch);
-fprintf('With rejection: ');
-fprintf('Accuracy = %.1f %% \n',accuracy*100);
+fprintf('Number of Correct results with Notch Filters: %d \n',correct);
