@@ -13,6 +13,10 @@ This repository is based on a MATLAB project labelled `voice_recognition`. The p
 1. `main.m` is the script that creates instances of the `speakerClassifier` class, trains, and tests those instances.
 2. `human_benchmark.mlx` is a a live script that is used to collect data on a human's ability to classify speakers.
 
+The following are key files relating to the project:
+1. The report presenting this project is found in the `docs/Report/` directory
+2. Additional resources such as related papers, the project prompt, and some slide shows can be found in the `docs/Background_Docs` directory.
+
 ## Contributions
 At this time no contributors are encouraged to continue this project. This repository is mainly for demonstrative purposes
 and to satisfy the final project requirement in UC Davis' EEC 201: Digital Signal Processing course taught in Winter Quarter 2021.
