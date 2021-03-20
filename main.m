@@ -51,46 +51,46 @@ fprintf('Accuracy = %.1f %% \n',accuracy*100);
 %% Test Functionality
 classifier.test(TrainDataBase)
 
-% %% Test with New Voices (roommates)
-% roommatesDir = fullfile('Data','Roommates');
-% [roomTest,roomTrain] = loadRoommatesData(roommatesDir);
-% 
-% roomClassifier = speakerClassifier();
-% [~] = roomClassifier.train(roomTrain);
-% [roomMatch,err1] = roomClassifier.classify(roomTest);
-% 
-% % Compute error statistics
-% accuracy = mean([1:4]'==cell2mat(roomMatch));
-% fprintf('With roommate dataset: ');
-% fprintf('Accuracy = %.1f %% \n',accuracy*100);
-% 
-% %% Test Rejection Ability
-% TestDir = fullfile('Data','Test_Data');
-% TestDataBase = cell(1,8);
-% for i = 1:8
-%     filename = 's' + string(i) + '.wav';
-%     [audio,Fs] = audioread(fullfile(TestDir,filename));
-%     TestDataBase{i} = {audio,Fs};
-% end
-% numClusters = 8;
-% numFilters = 32;
-% numCoeffs = 11;
-% rejector = speakerClassifier(numClusters,numFilters,numCoeffs);
-% [~] = rejector.train(TestDataBase);
-% [rejectMatch,err2] = rejector.classify(TrainDataBase,40);
-% 
-% % Compute error statistics
-% expected = {1;2;3;4;5;6;7;8;"No match found";"No match found";"No match found"};
-% correct = 0;
-% for i = 1:length(rejectMatch)
-%     try
-%         correct = correct + (expected{i} == rejectMatch{i});
-%     catch
-%     end
-% end
-% accuracy = correct/length(rejectMatch);
-% fprintf('With rejection: ');
-% fprintf('Accuracy = %.1f %% \n',accuracy*100);
+%% Test with New Voices (roommates)
+roommatesDir = fullfile('Data','Roommates');
+[roomTest,roomTrain] = loadRoommatesData(roommatesDir);
+
+roomClassifier = speakerClassifier();
+[~] = roomClassifier.train(roomTrain);
+[roomMatch,err1] = roomClassifier.classify(roomTest);
+
+% Compute error statistics
+accuracy = mean([1:4]'==cell2mat(roomMatch));
+fprintf('With roommate dataset: ');
+fprintf('Accuracy = %.1f %% \n',accuracy*100);
+
+%% Test Rejection Ability
+TestDir = fullfile('Data','Test_Data');
+TestDataBase = cell(1,8);
+for i = 1:8
+    filename = 's' + string(i) + '.wav';
+    [audio,Fs] = audioread(fullfile(TestDir,filename));
+    TestDataBase{i} = {audio,Fs};
+end
+numClusters = 8;
+numFilters = 32;
+numCoeffs = 11;
+rejector = speakerClassifier(numClusters,numFilters,numCoeffs);
+[~] = rejector.train(TestDataBase);
+[rejectMatch,err2] = rejector.classify(TrainDataBase,40);
+
+% Compute error statistics
+expected = {1;2;3;4;5;6;7;8;"No match found";"No match found";"No match found"};
+correct = 0;
+for i = 1:length(rejectMatch)
+    try
+        correct = correct + (expected{i} == rejectMatch{i});
+    catch
+    end
+end
+accuracy = correct/length(rejectMatch);
+fprintf('With rejection: ');
+fprintf('Accuracy = %.1f %% \n',accuracy*100);
 
 %% Notch Filters to test Robustness of Model
 correct = 0;
@@ -124,3 +124,21 @@ for i = 1:100
     end
 end
 fprintf('Number of Correct results with Notch Filters: %d \n',correct);
+
+%% Train/Test and Evaluate on voxCeleb Audio Dataset
+voxPath = fullfile('Data','voxCeleb');
+rng(100);
+[celebTest, celebTrain] = loadVoxCeleb(voxPath,1);
+
+% Uncomment to reduce the number of speakers
+% celebTest = celebTest(1:3);
+% celebTrain = celebTrain(1:3);
+
+celebClassifier = speakerClassifier();
+[~] = celebClassifier.train(celebTrain);
+[celebMatch,celebErr] = celebClassifier.classify(celebTest);
+
+% Compute error statistics
+accuracy = mean([1:length(celebTest)]'==cell2mat(celebMatch));
+fprintf('With voxCeleb dataset: ');
+fprintf('Accuracy = %.1f %% \n',accuracy*100);

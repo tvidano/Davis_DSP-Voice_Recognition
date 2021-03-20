@@ -182,7 +182,8 @@ classdef speakerClassifier < handle
             scatter(MFCCs(2,:),MFCCs(3,:),'r')
             scatter(MFCC2(2,:),MFCC2(3,:),'b')
             hold off;
-            title('Test5')
+            title('Test5');xlabel('MFCC-2');ylabel('MFCC-3');
+            legend('Speaker 1','Speaker 2');
             
             % Plot MFCC-2 vs. MFCC-3 with Centroids
             figure; hold on;
@@ -191,7 +192,8 @@ classdef speakerClassifier < handle
             scatter(C(:,1),C(:,2),100,'filled','rd')
             scatter(C2(:,1),C2(:,2),100,'filled','bd')
             hold off;
-            title('Test6')
+            title('Test6');xlabel('MFCC-2');ylabel('MFCC-3');
+            legend('Speaker 1','Speaker 2','S1 Centroids','S2 Centroids')
         end
             
     end

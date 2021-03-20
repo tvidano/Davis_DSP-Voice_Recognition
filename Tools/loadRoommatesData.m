@@ -4,8 +4,9 @@ function [testData,trainData] = loadRoommatesData(path)
 % Inputs    path            path to roommates audio recording dataset.
 %
 % Outputs   testData        cell array containing audio samples for
+%                           testing
+%           trainData       cell array containing audio samples for
 %                           training
-%           trainData       cell array containing audio samples for testing
 
 trainData = cell(4,1);
 testData = cell(4,1);
