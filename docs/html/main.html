@@ -6,7 +6,7 @@
    <!--
 This HTML was auto-generated from MATLAB code.
 To make changes, update the MATLAB code and republish this document.
-      --><title>main</title><meta name="generator" content="MATLAB 9.9"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2021-03-18"><meta name="DC.source" content="main.m"><style type="text/css">
+      --><title>main</title><meta name="generator" content="MATLAB 9.9"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2021-03-19"><meta name="DC.source" content="main.m"><style type="text/css">
 html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
 
 html { min-height:100%; margin-bottom:1px; }
@@ -67,7 +67,7 @@ table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px soli
 
 
 
-  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Collect Training Data</a></li><li><a href="#3">Build Codebook for each Train Data</a></li><li><a href="#4">Collect Test Data</a></li><li><a href="#5">Classify Test Data</a></li><li><a href="#6">Test Functionality</a></li><li><a href="#7">Test with New Voices (roommates)</a></li><li><a href="#8">Test Rejection Ability</a></li><li><a href="#9">Notch Filters to test Robustness of Model</a></li></ul></div><pre class="codeinput"><span class="comment">%{
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Collect Training Data</a></li><li><a href="#3">Build Codebook for each Train Data</a></li><li><a href="#4">Collect Test Data</a></li><li><a href="#5">Classify Test Data</a></li><li><a href="#6">Test Functionality</a></li><li><a href="#7">Test with New Voices (roommates)</a></li><li><a href="#8">Test Rejection Ability</a></li><li><a href="#9">Notch Filters to test Robustness of Model</a></li><li><a href="#10">Train/Test and Evaluate on voxCeleb Audio Dataset</a></li></ul></div><pre class="codeinput"><span class="comment">%{
 </span><span class="comment">Main script for MATLAB Project voice_recognition
 </span><span class="comment">
 </span><span class="comment">Authors: Tanuj Kalakuntla, Trevor Vidano
@@ -181,7 +181,24 @@ fprintf(<span class="string">'Accuracy = %.1f %% \n'</span>,accuracy*100);
     <span class="keyword">end</span>
 <span class="keyword">end</span>
 fprintf(<span class="string">'Number of Correct results with Notch Filters: %d \n'</span>,correct);
-</pre><pre class="codeoutput">Number of Correct results with Notch Filters: 50 
+</pre><pre class="codeoutput">Number of Correct results with Notch Filters: 54 
+</pre><img vspace="5" hspace="5" src="main_08.png" alt=""> <h2 id="10">Train/Test and Evaluate on voxCeleb Audio Dataset</h2><pre class="codeinput">voxPath = fullfile(<span class="string">'Data'</span>,<span class="string">'voxCeleb'</span>);
+rng(100);
+[celebTest, celebTrain] = loadVoxCeleb(voxPath,1);
+
+<span class="comment">% Uncomment to reduce the number of speakers</span>
+<span class="comment">% celebTest = celebTest(1:3);</span>
+<span class="comment">% celebTrain = celebTrain(1:3);</span>
+
+celebClassifier = speakerClassifier();
+[~] = celebClassifier.train(celebTrain);
+[celebMatch,celebErr] = celebClassifier.classify(celebTest);
+
+<span class="comment">% Compute error statistics</span>
+accuracy = mean([1:length(celebTest)]'==cell2mat(celebMatch));
+fprintf(<span class="string">'With voxCeleb dataset: '</span>);
+fprintf(<span class="string">'Accuracy = %.1f %% \n'</span>,accuracy*100);
+</pre><pre class="codeoutput">With voxCeleb dataset: Accuracy = 20.0 % 
 </pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2020b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %{
@@ -310,5 +327,23 @@ for i = 1:100
     end
 end
 fprintf('Number of Correct results with Notch Filters: %d \n',correct);
+
+%% Train/Test and Evaluate on voxCeleb Audio Dataset
+voxPath = fullfile('Data','voxCeleb');
+rng(100);
+[celebTest, celebTrain] = loadVoxCeleb(voxPath,1);
+
+% Uncomment to reduce the number of speakers
+% celebTest = celebTest(1:3);
+% celebTrain = celebTrain(1:3);
+
+celebClassifier = speakerClassifier();
+[~] = celebClassifier.train(celebTrain);
+[celebMatch,celebErr] = celebClassifier.classify(celebTest);
+
+% Compute error statistics
+accuracy = mean([1:length(celebTest)]'==cell2mat(celebMatch));
+fprintf('With voxCeleb dataset: ');
+fprintf('Accuracy = %.1f %% \n',accuracy*100);
 ##### SOURCE END #####
 --></body></html>
